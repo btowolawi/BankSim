@@ -1,9 +1,6 @@
 package edu.temple.cis.c3238.banksim;
-/**
- * @author Cay Horstmann
- * @author Modified by Paul Wolfgang
- * @author Modified by Charles Wang
- */
+
+
 class TransferThread extends Thread {
 
     private final Bank bank;
@@ -18,10 +15,31 @@ class TransferThread extends Thread {
 
     @Override
     public void run() {
+    	System.out.println("");
         for (int i = 0; i < 10000; i++) {
             int toAccount = (int) (bank.size() * Math.random());
             int amount = (int) (maxAmount * Math.random());
-            bank.transfer(fromAccount, toAccount, amount);
+            
+            synchronized(Account.class)
+            {
+                bank.transfer(fromAccount, toAccount, amount);
+            }
+            //If the thread has terminated, indicate which account terminated, and exit program
+            if(isTerminated()) {
+            	System.out.println("Account [" + i + "] has terminated");
+            	System.out.println("Bank is close.");
+            	System.exit(1);
+            }
         }
+    }
+    
+    //Checks to see in the current thread has terminated
+    public boolean isTerminated() {
+    	if(Thread.currentThread().getState() == Thread.State.TERMINATED) {
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
     }
 }
